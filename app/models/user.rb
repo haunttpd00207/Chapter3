@@ -9,9 +9,12 @@ class User < ApplicationRecord
                     format: { with: VALID_EMAIL_REGEX },
                     uniqueness: { case_sensitive: false }
  
+
  has_secure_password
  validates :password, presence: true, length: { minimum: 6 }, allow_nil: true
 
+ has_many :microposts, dependent: :destroy
+ 
     class << self
     # Returns the hash digest of the given string.
   	 def digest(string)
@@ -62,12 +65,16 @@ class User < ApplicationRecord
     end
 
     def send_password_reset_email
-        UserMailer.password_reset(self).deliver_now
+      UserMailer.password_reset(self).deliver_now
     end  
     
-      def password_reset_expired?
+    def password_reset_expired?
       reset_sent_at < 2.hours.ago
-      end
+    end
+
+    def feed
+      Micropost.where("user_id = ?", id)
+    end
 
 
 
